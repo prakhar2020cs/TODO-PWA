@@ -1,12 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa'; // 1. Import the plugin
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-
+    tailwindcss(),
     // 2. Configure the VitePWA plugin
     VitePWA({
       registerType: 'autoUpdate', // Automatically update the Service Worker
