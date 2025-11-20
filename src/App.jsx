@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import DigitalClock from './component/DigitalClock';
 
 // NOTE: LocalForage dependency removed to fix the compilation error.
 // Data persistence now uses native localStorage, which is inherently available.
@@ -30,6 +31,8 @@ const STORAGE_KEY = 'todoList';
 /** Fetches todos from localStorage (Requires parsing as it stores strings) */
 const getLocalTodos = async () => {
     try {
+
+    
         const storedJson = localStorage.getItem(STORAGE_KEY);
         // If data exists, parse it. Otherwise, return an empty array.
         const storedTodos = storedJson ? JSON.parse(storedJson) : [];
@@ -122,7 +125,7 @@ const AddTodo = React.memo(({ newTodoText, setNewTodoText, addTodo }) => {
           placeholder="What needs to be done?"
           // Key added to prevent component remounting/losing focus
           key="todo-input-field" 
-          className="flex-grow p-3 rounded-lg border border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          className="flex-grow p-3 rounded-lgborder border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
         />
         <button
           type="submit"
@@ -149,7 +152,10 @@ const App = () => {
   useEffect(() => {
     const loadTodos = async () => {
       try {
-        const loadedTodos = await getLocalTodos();
+      
+ const loadedTodos = isOnline? await getLocalTodos(): await getDbTodo() ;
+       
+       
         setTodos(loadedTodos);
       } catch (e) {
         setError("Failed to load tasks from local storage.");
@@ -237,11 +243,12 @@ const App = () => {
   const sortedTodos = useMemo(() => 
     [...todos].sort((a, b) => b.createdAt - a.createdAt)
   , [todos]);
-
+const position = 'fixed bottom-4 right-4';
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 font-sans flex flex-col items-center">
       <OnlineStatusBanner />
-      
+
+      <DigitalClock position={position}/>
       <div className="w-full max-w-2xl p-4 sm:p-8">
         <header className="text-center mb-10">
           <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white mb-2">
