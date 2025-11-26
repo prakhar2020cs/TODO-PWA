@@ -1,5 +1,9 @@
-import { fetchTodosFromServer, saveTodosToServer } from './apiService';
+import { apiFetchTodosFromServer , apiSaveTodosToServer } from './apiService';
 import { db } from './dexieService';
+import {  useTodos } from '../hooks/useIndexedDB.jsx';
+
+
+
 
 export class DbService {
   constructor() {
@@ -7,28 +11,38 @@ export class DbService {
   }
 
 
+
+
+
   // ============ TODO METHODS ============
 
 
  async  syncTodos() {
-  debugger;
   try {
     let localTodos = await this.getAllTodos();
        let  localTodosWOid = localTodos.map(todo => ({
-            Created: todo.Created,
-            Content: todo.Content,          
-           Title: todo.Title,}));
-   await saveTodosToServer(localTodosWOid);
+           Title: todo.Title || todo.title,}));
 
-    const todosFromServer = await fetchTodosFromServer();
+   await apiSaveTodosToServer(localTodosWOid);
+
+    const todosFromServer = await apiFetchTodosFromServer();
 console.log('Todos fetched from server for sync:', todosFromServer);
     // Upsert into Dexie
-    await db.transaction('rw', db.todos, async () => {
-      for (const todo of todosFromServer) {
-        // Use `put` so it updates existing items (if id matches), or adds new ones
-        await db.todos.put(todo);
-      }
+  await db.transaction('rw', db.todos, async () => {
+  for (const todo of todosFromServer) {
+    await db.todos.put({
+      id: todo.id,
+      Title: todo.title,                  // map lowercase 'title' to 'Title'
+      Content: todo.content ?? null,
+      Created: todo.created ?? null,
+      UpdatedAt: todo.updatedAt ?? new Date().toISOString(),
+      Completed: todo.completed ?? false
     });
+  }
+
+  
+});
+
 
     console.log('Sync complete: todos saved locally');
   } catch (err) {
@@ -37,11 +51,9 @@ console.log('Todos fetched from server for sync:', todosFromServer);
 }
   
   // Create a new todo
-  async addTodo(todo) {
+  async addTodo(title) {
     const newTodo = {
-      Title: todo.title,
-      Content: todo.content || '',
-      Created: new Date().toISOString(),
+      Title: title,
     };
     
     const id = await this.todosTable.add(newTodo);
@@ -62,9 +74,9 @@ console.log('Todos fetched from server for sync:', todosFromServer);
 
 
   // Get todos by status
-  async getTodosByStatus(completed) {
+  async getTodosByStatus(Completed) {
     return await this.todosTable
-      .filter(todo => todo.completed === completed)
+      .filter(todo => todo.Completed === Completed)
       .toArray();
   }
 
@@ -95,7 +107,7 @@ console.log('Todos fetched from server for sync:', todosFromServer);
   async updateTodo(id, updates) {
     const updatedData = {
       ...updates,
-      updatedAt: new Date().toISOString()
+      UpdatedAt: new Date().toISOString()
     };
     
     await this.todosTable.update(id, updatedData);
@@ -103,11 +115,11 @@ console.log('Todos fetched from server for sync:', todosFromServer);
   }
 
   // Toggle todo completion
-  async toggleTodoComplete(id) {
+  async toggleTodoComplete(id, state) {
     const todo = await this.getTodo(id);
     await this.todosTable.update(id, { 
-      completed: !todo.completed,
-      updatedAt: new Date().toISOString()
+      Completed: state,
+      UpdatedAt: new Date().toISOString()
     });
     return await this.getTodo(id);
   }

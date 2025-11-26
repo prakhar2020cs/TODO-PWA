@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { dbService } from '../db/dbService';
+import { useDispatch, useSelector } from 'react-redux';
+import { addTodoLocal, setTodos } from '../features/todoSlice';
 
 // Hook to manage all todos
 export const useTodos = () => {
-  const [todos, setTodos] = useState([]);
+  // const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
-//  
 
+  const dispatch = useDispatch();
+
+const todos = useSelector((state) => state.todo.todos);
 
 
   const loadTodos = async () => {
@@ -19,8 +23,7 @@ export const useTodos = () => {
       
       // Sort by createdAt (newest first)
       data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      setTodos(data);
-      
+    dispatch(setTodos(data));      
       // Load stats
     } catch (error) {
       console.error('Error loading todos:', error);
@@ -35,19 +38,19 @@ export const useTodos = () => {
 
 
 
-  const addTodo = async (todo) => {
-    const newTodo = await dbService.addTodo(todo);
-    await loadTodos(); // Refresh list
-    return newTodo;
-  };
+  // const addTodo = async (todo) => {
+  //   const newTodo = await dbService.addTodo(todo);
+  //   await loadTodos(); // Refresh list
+  //   return newTodo;
+  // };
 
   const updateTodo = async (id, updates) => {
     await dbService.updateTodo(id, updates);
     await loadTodos();
   };
 
-  const toggleComplete = async (id) => {
-    await dbService.toggleTodoComplete(id);
+  const toggleComplete = async (id, state) => {
+    await dbService.toggleTodoComplete(id, state);
     await loadTodos();
   };
 
@@ -61,7 +64,7 @@ export const useTodos = () => {
   return {
     todos,
     loading,
-    addTodo,
+    // addTodo,
     updateTodo,
     toggleComplete,
     deleteTodo,

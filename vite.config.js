@@ -10,6 +10,19 @@ export default defineConfig({
     tailwindcss(),
     // 2. Configure the VitePWA plugin
     VitePWA({
+
+
+     strategies: 'generateSW',
+      
+      // 2. **DEFINE SOURCE:** Point the plugin to your custom SW file.
+      //    We assume your file is named 'src/sw.js'
+      // injectManifest: {
+      //   swSrc: './src/sw.js', // <-- Path to your custom SW file
+        
+      //   // This is the string placeholder used in your sw.js 
+      //   // for injecting the list of cached assets.
+      //   injectionPoint: 'self.__WB_MANIFEST', 
+      // },
       registerType: 'autoUpdate', // Automatically update the Service Worker
       
       // 3. Configure the Manifest (manifest.json content)
@@ -53,3 +66,4 @@ export default defineConfig({
     }),
   ],
 });
+

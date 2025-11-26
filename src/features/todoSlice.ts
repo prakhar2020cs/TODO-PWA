@@ -1,9 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { useSelector } from 'react-redux';
 
 export interface Todo {
-  id: string
-  text: string
-  completed: boolean
+     id: any;
+    Title: any;
+    Content: string;
+    Created: string;
+    UpdatedAt: string;
+    Completed: boolean;
 }
 
 export interface TodoState {
@@ -18,22 +22,19 @@ export const todoSlice = createSlice({
   name: 'todo',
   initialState,
   reducers: {
-    addTodoLocal: (state, action: PayloadAction<string>) => {
-      state.todos.push({
-        id: crypto.randomUUID(),
-        text: action.payload,
-        completed: false,
-      })
+    addTodoLocal: (state, action: PayloadAction<Todo>) => {
+      state.todos.push(action.payload)
     },
 
     removeTodo: (state, action: PayloadAction<string>) => {
       state.todos = state.todos.filter((t) => t.id !== action.payload)
     },
 
-    toggleTodo: (state, action: PayloadAction<string>) => {
-      const todo = state.todos.find((t) => t.id === action.payload)
+    toggleTodo: (state, action: PayloadAction<{id:any, toggleState:boolean } >) => {
+      const {id, toggleState} = action.payload;
+      const todo = state.todos.find((t) => t.id === id)
       if (todo) {
-        todo.completed = !todo.completed
+        todo.Completed = toggleState
       }
     },
 
@@ -43,6 +44,6 @@ export const todoSlice = createSlice({
   },
 })
 
-export const { addTodoLocal, removeTodo, toggleTodo, setTodos } = todoSlice.actions
+export const { addTodoLocal, removeTodo,  setTodos, toggleTodo } = todoSlice.actions
 
 export default todoSlice.reducer
