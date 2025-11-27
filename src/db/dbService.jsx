@@ -60,7 +60,10 @@ console.log('Todos fetched from server for sync:', todosFromServer);
     return { ...newTodo, id };
   }
 
-  
+
+
+
+
   // Get all todos
   async getAllTodos() {
     return await this.todosTable.toArray();

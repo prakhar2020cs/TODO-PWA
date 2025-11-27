@@ -5,6 +5,7 @@ import { apiSaveTodoToServer , apiMultipleUpload, apiToggleCompleted, apiDelete 
 import { useDispatch, useSelector } from "react-redux";
 import { addTodoLocal, removeTodo, setTodos, toggleTodo } from "./features/todoSlice.js";
 import FileUploader from "./component/FileUploader.jsx";
+import { addTodoOffline, registerBackgroundSync } from "./db/syncService.jsx";
 
 const useOnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -92,21 +93,31 @@ console.log(todos );
 
     
      
+    }   //For Offline Mode
+    else if(newTodoTitle.trim()){
+      try {
+          // add to indexDB
+      await dbService.addTodo(newTodoTitle);
+
+      //add to Redux store
+      dispatch(addTodoLocal(newTodoTitle));
+
+      //add to sync queue to be synced when online
+      await addTodoOffline({ Title: newTodoTitle});
+
+
+            // ⭐ TRIGGER BACKGROUND SYNC HERE
+      await registerBackgroundSync('syncTodos');
+
+      setNewTodoTitle("");
+      console.log('Todo queued for sync when online');
+
+      } catch (error) {
+              console.error('Error adding offline todo:', error);
+
+      }
+    
     }
-    //For Offline Mode
-    // else{
-//    await db.syncQueue.add({
-//   operation: "add",
-//   table: "todos",
-//   data: todo,
-//   timestamp: Date.now()
-// });
-
-
-      // await dbService.addTodo(offlineTodo);
-      // dispatch(addTodoLocal(offlineTodo));
-      // await db.syncQueue.add(offlineTodo);
-    // }
   };
 
 
@@ -167,6 +178,19 @@ console.log(todos, "todo state after toggle" );
   })();
 
 }, [isOnline]);
+
+useEffect(() => {
+  const handleOnline = async () => {
+    console.log('Device is online, triggering sync...');
+    await registerBackgroundSync('syncTodos');
+  };
+
+  window.addEventListener('online', handleOnline);
+
+  return () => {
+    window.removeEventListener('online', handleOnline);
+  };
+}, []);
 
         // console.log("Redux Todos", todos);
 

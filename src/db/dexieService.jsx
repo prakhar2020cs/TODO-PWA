@@ -9,8 +9,8 @@ export class DexieService extends Dexie {
       // Todos table
       // ++ means auto-increment primary key
       todos: '++id, Title, Content, Created, Completed, UpdatedAt',
-          // AddThis when using offline Sync
-          // syncQueue: "++id, operation, table, timestamp"
+      // AddThis when using offline Sync
+      syncQueue: "++id, operation, table, data, timestamp"
 
     });
 
