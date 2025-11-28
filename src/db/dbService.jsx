@@ -18,6 +18,7 @@ export class DbService {
 
 
  async  syncTodos() {
+  debugger;
   try {
     let localTodos = await this.getAllTodos();
        let  localTodosWOid = localTodos.map(todo => ({
@@ -52,6 +53,13 @@ console.log('Todos fetched from server for sync:', todosFromServer);
   
   // Create a new todo
   async addTodo(title) {
+
+    let storedTodo = await this.todosTable.where('Title').equals(title).first(); 
+    if(storedTodo){
+      console.log('Todo with this title already exists:', storedTodo);
+      return
+    }
+
     const newTodo = {
       Title: title,
     };

@@ -17,6 +17,7 @@
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-redux": "^9.2.0",
+    "react-toastify": "^11.0.5",
     "windows-mouse": "^1.0.4",
     "workbox-cacheable-response": "^7.4.0"
   },

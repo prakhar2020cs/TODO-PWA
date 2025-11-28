@@ -5,7 +5,7 @@ import { apiSaveTodoToServer , apiMultipleUpload, apiToggleCompleted, apiDelete 
 import { useDispatch, useSelector } from "react-redux";
 import { addTodoLocal, removeTodo, setTodos, toggleTodo } from "./features/todoSlice.js";
 import FileUploader from "./component/FileUploader.jsx";
-import { addTodoOffline, registerBackgroundSync } from "./db/syncService.jsx";
+import { addTodoToQueue, registerBackgroundSync } from "./db/syncService.jsx";
 
 const useOnlineStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -70,7 +70,7 @@ console.log(todos );
     if (newTodoTitle.trim() && isOnline) {
          console.log("Adding todo:", newTodoTitle);
       try {
-       
+       debugger;
           //add todo in APi DB
          const {data} =  await apiSaveTodoToServer ({
             Title: newTodoTitle
@@ -80,7 +80,7 @@ console.log(todos );
             dbService.syncTodos();
 
               //add todo in Redux store
-      dispatch(addTodoLocal(serverTodo));
+      dispatch(addTodoLocal(data));
       setNewTodoTitle("");
         
       } catch (error) {
@@ -97,13 +97,14 @@ console.log(todos );
     else if(newTodoTitle.trim()){
       try {
           // add to indexDB
-      await dbService.addTodo(newTodoTitle);
+     let {savedTodo} = await dbService.addTodo(newTodoTitle);
 
       //add to Redux store
       dispatch(addTodoLocal(newTodoTitle));
 
+      
       //add to sync queue to be synced when online
-      await addTodoOffline({ Title: newTodoTitle});
+      await addTodoToQueue({ Title: newTodoTitle, id: savedTodo.id});
 
 
             // ⭐ TRIGGER BACKGROUND SYNC HERE
@@ -163,6 +164,8 @@ console.log(todos, "todo state after toggle" );
   //   fetchAndLoad();
   //   }
   // }, [isOnline]);
+
+  //checks if user is online, if user comes back online from offline, it triggers pull and push
   useEffect(() => {
   if (!isOnline) return;
 

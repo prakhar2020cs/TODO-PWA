@@ -143,10 +143,11 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncTodos() {
+  debugger;
   console.log('🔍 Opening IndexedDB...');
   
   try {
-    const db = await openDB('TodoAppDB', 6);
+    const db = await openDB('TodoAppDB', 61);
     console.log('✅ IndexedDB opened');
     
     const tx = db.transaction('syncQueue', 'readwrite');

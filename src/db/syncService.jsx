@@ -15,8 +15,8 @@ async function syncNow() {
 }
 
 
-export async function addTodoOffline(todo) {
-  await db.todos.add(todo);
+export async function addTodoToQueue(todo) {
+
 
   await db.syncQueue.add({
     operation: "add",
@@ -30,7 +30,8 @@ export async function addTodoOffline(todo) {
 
 //for sync registration sync when back online
 export const registerBackgroundSync = async (tag = 'syncTodos') => {
- 
+  
+  debugger;
   //checks if browser supports service workers and background sync
   if ('serviceWorker' in navigator && 'SyncManager' in window) {
     try {
