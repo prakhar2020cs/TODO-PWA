@@ -57,7 +57,7 @@ const resp = await fetch(API_URL+`/DeleteTodo?id=${id}`, {method: 'DELETE'});
 
 export const apiMultipleUpload = async (e) => {
   e.preventDefault();
-debugger;
+;
   const fileInput = e.target.elements.file; 
   const selectedFiles = fileInput.files; // Get the full FileList
 

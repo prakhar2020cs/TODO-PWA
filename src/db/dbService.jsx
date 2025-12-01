@@ -18,7 +18,7 @@ export class DbService {
 
 
  async  syncTodos() {
-  debugger;
+  ;
   try {
     let localTodos = await this.getAllTodos();
        let  localTodosWOid = localTodos.map(todo => ({

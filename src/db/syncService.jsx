@@ -29,22 +29,22 @@ export async function addTodoToQueue(todo) {
 
 
 //for sync registration sync when back online
-export const registerBackgroundSync = async (tag = 'syncTodos') => {
+// export const registerBackgroundSync = async (tag = 'syncTodos') => {
   
-  debugger;
-  //checks if browser supports service workers and background sync
-  if ('serviceWorker' in navigator && 'SyncManager' in window) {
-    try {
-      const registration = await navigator.serviceWorker.ready;
-      await registration.sync.register(tag);
-      console.log('Background sync registered:', tag);
-      return true;
-    } catch (error) {
-      console.error('Background sync registration failed:', error);
-      return false;
-    }
-  } else {
-    console.warn('Background sync not supported');
-    return false;
-  }
-};
+//   ;
+//   //checks if browser supports service workers and background sync
+//   if ('serviceWorker' in navigator && 'SyncManager' in window) {
+//     try {
+//       const registration = await navigator.serviceWorker.ready;
+//       await registration.sync.register(tag);
+//       console.log('Background sync registered:', tag);
+//       return true;
+//     } catch (error) {
+//       console.error('Background sync registration failed:', error);
+//       return false;
+//     }
+//   } else {
+//     console.warn('Background sync not supported');
+//     return false;
+//   }
+// };
