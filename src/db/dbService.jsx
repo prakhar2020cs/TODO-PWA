@@ -1,4 +1,4 @@
-import { apiFetchTodosFromServer , apiSaveTodosToServer } from './apiService';
+import { apiFetchTodosFromServer , apiSaveTodosToServer, apiSaveTodoToServer } from './apiService';
 import { db } from './dexieService';
 import {  useTodos } from '../hooks/useIndexedDB.jsx';
 
@@ -18,7 +18,7 @@ export class DbService {
 
 
  async  syncTodos() {
-  ;
+  
   try {
     let localTodos = await this.getAllTodos();
        let  localTodosWOid = localTodos.map(todo => ({
@@ -29,7 +29,7 @@ export class DbService {
     const todosFromServer = await apiFetchTodosFromServer();
 console.log('Todos fetched from server for sync:', todosFromServer);
     // Upsert into Dexie
-  await db.transaction('rw', db.todos, async () => {
+ await db.transaction('rw', db.todos, async () => {
   for (const todo of todosFromServer) {
     await db.todos.put({
       id: todo.id,
@@ -41,6 +41,8 @@ console.log('Todos fetched from server for sync:', todosFromServer);
     });
   }
 
+  console.log('Upserted todos into Dexie during sync', );
+
   
 });
 
@@ -50,8 +52,29 @@ console.log('Todos fetched from server for sync:', todosFromServer);
     console.error('Sync failed', err);
   }
 }
+
+
+async syncOneTodo(todo){
+  debugger;
+try {
+  const localTodo = {
+  id: todo.id,
+  Title: todo.title,
+  Completed: todo.completed ?? false,
+  CreatedAt: todo.createdAt,
+  UpdatedAt: todo.updatedAt
+};
+  const savedTodo = await db.todos.put(localTodo);
+  console.log('Synced one todo to IndexedDB:', savedTodo);
+} catch (error) {
+  console.error('Failed to sync one todo to IndexedDB:', error);
+}
+
+
+
+}
   
-  // Create a new todo
+  // Create a new todo for offline
   async addTodo(title) {
 
     let storedTodo = await this.todosTable.where('Title').equals(title).first(); 
@@ -67,6 +90,15 @@ console.log('Todos fetched from server for sync:', todosFromServer);
     const id = await this.todosTable.add(newTodo);
     return { ...newTodo, id };
   }
+
+  //create new todo for online
+    async addTodoFromServer(todo) {
+  db.todos.put(todo);
+
+
+    }
+
+  
 
 
 

@@ -8,6 +8,7 @@ import {
 } from 'workbox-strategies';
 import { BackgroundSyncPlugin } from 'workbox-background-sync';
 import { ExpirationPlugin } from 'workbox-expiration';
+import { apiFetchTodosFromServer } from './db/apiService';
 
 // ========================================
 // PRECACHE STATIC ASSETS (HTML, CSS, JS, etc)
@@ -32,22 +33,25 @@ const todoQueue = new BackgroundSyncPlugin('todoQueue', {
     onSync: async ({ queue }) => {
     console.log("🔥 onSync START — queue size:", await queue.size());
 
-    try {
-      await queue.replayRequests(); // Workbox handles each request
-      console.log("🎉 All queued requests replayed successfully!");
-    } catch (err) {
-      console.error("💥 Replay failed:", err);
-    }
+  
   },
 });
 
-self.addEventListener('sync', event => {
+self.addEventListener('sync', async (event) => {
   if (event.tag === 'workbox-background-sync:todoQueue') {
     console.log('🔄 Sync event fired for todoQueue');
+  }else if(event.tag === 'test-fire'){
+    console.log('🔄 Test sync event fired');
+    let  data = await apiFetchTodosFromServer();
+    console.log('Fetched todos from server during test sync:', data);
   }
 });
 
-;
+
+
+
+
+
 // POST
 registerRoute(
   ({ url, request }) =>
@@ -109,3 +113,8 @@ registerRoute(
     plugins: [new ExpirationPlugin({ maxEntries: 60 })],
   })
 );
+
+
+
+
+

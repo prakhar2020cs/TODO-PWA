@@ -55,8 +55,7 @@ const AppDexie = () => {
 
 
 const handleDelete = async (id) =>{
-  ;
-  if(isOnline){
+
     try {
       // API delete
       await apiDelete(id);
@@ -69,30 +68,36 @@ const handleDelete = async (id) =>{
 console.log(todos );
     } catch (error) {
       console.error("Error deleting todo from server:", error);
+         // API delete
+      await apiDelete(id);
     
     }
-  }
 }
 
   const handleAddTodo = async (e) => {
       e.preventDefault();
-      ;
+      
 
     if (newTodoTitle.trim() && isOnline) {
          console.log("Adding todo:", newTodoTitle);
       try {
-       ;
+       debugger;
+             navigator.serviceWorker.ready.then(registration => {
+              registration.sync.register('test-fire');
+               console.log('Sync event registered for test  when back online');
+              });
           //add todo in APi DB
-         const data =  await apiSaveTodoToServer ({
+         const {data} =  await apiSaveTodoToServer({
             Title: newTodoTitle
           });
           console.log("Todo saved to server:", data);
+
            //Add todo to index DB
-            dbService.syncTodos();
+            dbService.syncOneTodo(data);;
 
               //add todo in Redux store
-      dispatch(addTodoLocal(data));
-      setNewTodoTitle("");
+            dispatch(addTodoLocal(data));
+            setNewTodoTitle("");
         
       } catch (error) {
         console.error("Error saving todo to server:", error);
@@ -108,6 +113,7 @@ console.log(todos );
     else if(newTodoTitle.trim()){
       try {
 
+
         //let it fail, workbox will intercept and queue it
              const data =  await apiSaveTodoToServer ({
             Title: newTodoTitle
@@ -119,15 +125,6 @@ console.log(todos );
       //add to Redux store
       dispatch(addTodoLocal(newTodoTitle));
 
-      
-//i dont need these 2 steps when using workbox background sync, it automatically intercepts failed requests and queues them and retries when back online
-
-
-      //add to sync queue to be synced when online
-      // await addTodoToQueue({ Title: newTodoTitle, id: savedTodo.id});
-
-            // ⭐ TRIGGER BACKGROUND SYNC HERE
-      // await registerBackgroundSync('syncTodos');
 
       setNewTodoTitle("");
       console.log('Todo queued for sync when online');
@@ -142,9 +139,19 @@ console.log(todos );
 
 
 const  handleToggleComplete = async (id) =>{
-  ;
-if(isOnline){
-try {
+  if(!isOnline){
+    try {
+      // IndexedDB update
+   
+      
+    
+    }catch (error) {
+      console.error("Error toggling todo complete status offline, req added to sync:", error);
+         await toggleComplete(id);
+  }
+
+  }
+  try {
   // DB update
   const {state:toggleState} = await apiToggleCompleted(id);
 
@@ -160,7 +167,7 @@ console.log(todos, "todo state after toggle" );
 
 
 }
-  } 
+  
 
 
 
@@ -185,21 +192,22 @@ console.log(todos, "todo state after toggle" );
   // }, [isOnline]);
 
   //checks if user is online, if user comes back online from offline, it triggers pull and push
-//   useEffect(() => {
-//   if (!isOnline) return;
+  useEffect(() => {
+  if (!isOnline) return;
 
-//   (async () => {
-//     ;
+  const fetch = async () => {
+    await dbService.syncTodos(); 
 
-//     await dbService.syncTodos(); 
+    const todosFromDexie = await dbService.getAllTodos();
+    console.log(todosFromDexie, "Dexie Todos after sync");
 
-//     const todosFromDexie = await dbService.getAllTodos();
-//     console.log(todosFromDexie, "Dexie Todos after sync");
+    dispatch(setTodos(todosFromDexie));  // Redux now gets correct, updated todos
+  };
 
-//     dispatch(setTodos(todosFromDexie));  // Redux now gets correct, updated todos
-//   })();
 
-// }, [isOnline]);
+   fetch();
+
+}, [isOnline]);
 
 useEffect(() => {
   const handleOnline = async () => {
